@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:onboard/main.dart';
 
 Future<Map<String, dynamic>> result() async {
   final _axios = axios();
@@ -7,7 +10,11 @@ Future<Map<String, dynamic>> result() async {
   try {
     Response response = await _axios.get('/recipe');
     print(response.data);
-    return {'data': response.data};
+    Map<String, dynamic> res = response.data;
+
+    // print(res);
+    return {'data': res['recipes']};
+    // return {'data': response.data};
   } on DioException catch (e) {
     print('Dio error: ${e.message}');
     return {'status': 'failed', 'message': e.message};
