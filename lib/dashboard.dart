@@ -4,8 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:carousel_slider/carousel_slider.dart' as cs;
 import 'package:onboard/Models/receipedetail.dart';
 import 'package:onboard/functiondio.dart';
-// import 'package:onboard/main.dart';
-// import 'package:onboard/vaiable.dart';
 
 // class Dashboard extends StatefulWidget {
 //   const Dashboard({super.key});
@@ -14,54 +12,130 @@ import 'package:onboard/functiondio.dart';
 //   State<Dashboard> createState() => _DashboardState();
 // }
 
-// List count = [];
-
 // class _DashboardState extends State<Dashboard> {
+//   List count = [];
+//   final TextEditingController searchController = TextEditingController();
+
+//   void searchResult() async {
+//     final query = searchController.text.trim().toLowerCase();
+
+//     // Simulate or fetch the data
+//     Map<String, dynamic> prod = await result();
+
+//     setState(() {
+//       count = prod['data'];
+
+//       // Filter matching recipes by name
+//       final matchedRecipes = count.where((element) {
+//         final name = (element['tags'] ?? '').toString().toLowerCase();
+//         return name.contains(query);
+//       }).toList();
+
+//       if (matchedRecipes.isNotEmpty) {
+//         for (var recipe in matchedRecipes) {
+//           print(recipe['name']);
+//         }
+//       } else {
+//         print("No recipes found matching '$query'.");
+//       }
+//     });
+//   }
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Welcome page'),
-//       ),
-//       body: SingleChildScrollView(
-//         child: Container(
-//           width: MediaQuery.of(context).size.width,
-//           height: MediaQuery.of(context).size.height,
-//           color: Colors.white,
-//           child: Column(
-//             children: [
-//               TextButton(
-//                 style: ButtonStyle(
-//                   backgroundColor: WidgetStatePropertyAll(
-//                     Colors.purpleAccent,
+//       body: Column(
+//         children: [
+//           Padding(
+//             padding: const EdgeInsets.all(16.0),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 const Text(
+//                   'What would you like to cook today?',
+//                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+//                 ),
+//                 const SizedBox(height: 16),
+//                 Container(
+//                   padding: const EdgeInsets.symmetric(horizontal: 16),
+//                   decoration: BoxDecoration(
+//                     color: Colors.grey[200],
+//                     borderRadius: BorderRadius.circular(30),
+//                   ),
+//                   child: Row(
+//                     children: [
+//                       const Icon(Icons.search),
+//                       const SizedBox(width: 8),
+//                       Expanded(
+//                         child: TextField(
+//                           controller: searchController,
+//                           decoration: const InputDecoration(
+//                             hintText: 'Search any recipes of your choice...',
+//                             border: InputBorder.none,
+//                           ),
+//                         ),
+//                       ),
+//                       IconButton(
+//                           onPressed: () async {
+//                             searchResult();
+//                           },
+//                           icon: Icon(Icons.tune)) // filter icon
+//                     ],
 //                   ),
 //                 ),
-//                 onPressed: () async {
-//                   // print(result());
-//                   Map<String, dynamic> prod = await result();
-//                   setState(() {
-//                     print('yyyy , ${prod.runtimeType}');
-//                     // print('yyyy , ${prod['data'].runtimeType}');
-//                     count = prod['data'];
-//                     print(count);
-//                   });
-//                 },
-//                 child: Text(
-//                   'Click here',
-//                   style: TextStyle(color: Colors.white),
+//                 const SizedBox(height: 16),
+//                 // 🎯 Promo Card
+//                 Container(
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(20),
+//                     color: Colors.black,
+//                     image: const DecorationImage(
+//                       image: AssetImage('lib/asset/food3.jpg'), // optional
+//                       fit: BoxFit.cover,
+//                       opacity: 0.1,
+//                     ),
+//                   ),
+//                   padding: const EdgeInsets.all(16),
+//                   child: Row(
+//                     children: [
+//                       Expanded(
+//                         child: Column(
+//                           crossAxisAlignment: CrossAxisAlignment.start,
+//                           children: const [
+//                             Text(
+//                               'Discover the secrets to\nbecoming a master chef!',
+//                               style: TextStyle(
+//                                   color: Colors.white,
+//                                   fontSize: 16,
+//                                   fontWeight: FontWeight.bold),
+//                             ),
+//                             SizedBox(height: 12),
+//                             ElevatedButton(
+//                               onPressed: null, // add functionality later
+//                               child: Text('Start Now'),
+//                             )
+//                           ],
+//                         ),
+//                       ),
+//                       const SizedBox(width: 16),
+//                       ClipRRect(
+//                         borderRadius: BorderRadius.circular(12),
+//                         child: Image.asset(
+//                           'lib/asset/food2.jpg', // 👈 your chef image
+//                           height: 80,
+//                           fit: BoxFit.cover,
+//                         ),
+//                       )
+//                     ],
+//                   ),
 //                 ),
-//               ),
-//               SizedBox(height: 50),
-//               Container(
-//                 width: MediaQuery.of(context).size.width,
-//                 height: MediaQuery.of(context).size.height * 0.5,
-//                 child: Expanded(
-//                   child: RecipeGrid(),
-//                 ),
-//               ),
-//             ],
+//               ],
+//             ),
 //           ),
-//         ),
+
+//           // 🔽 GridView in Expanded
+//           Expanded(child: RecipeGrid()),
+//         ],
 //       ),
 //     );
 //   }
@@ -76,14 +150,45 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   List count = [];
+  List filteredRecipes = [];
+  final TextEditingController searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    searchController.addListener(searchResult);
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void searchResult() async {
+    final query = searchController.text.trim().toLowerCase();
+
+    Map<String, dynamic> prod = await result();
+    final allRecipes = prod['data'];
+
+    setState(() {
+      count = allRecipes;
+      if (query.isEmpty) {
+        filteredRecipes = [];
+      } else {
+        filteredRecipes = count.where((element) {
+          final tags = (element['tags'] ?? []).join(',').toLowerCase();
+          return tags.contains(query);
+        }).toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Welcome page')),
       body: Column(
         children: [
-          // 🔍 Top Section: Search + Promo Card
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -101,29 +206,32 @@ class _DashboardState extends State<Dashboard> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Row(
-                    children: const [
-                      Icon(Icons.search),
-                      SizedBox(width: 8),
+                    children: [
+                      const Icon(Icons.search),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
-                          decoration: InputDecoration(
+                          controller: searchController,
+                          decoration: const InputDecoration(
                             hintText: 'Search any recipes of your choice...',
                             border: InputBorder.none,
                           ),
                         ),
                       ),
-                      Icon(Icons.tune), // filter icon
+                      IconButton(
+                        onPressed: searchResult,
+                        icon: const Icon(Icons.tune),
+                      )
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                // 🎯 Promo Card
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     color: Colors.black,
                     image: const DecorationImage(
-                      image: AssetImage('lib/asset/food3.jpg'), // optional
+                      image: AssetImage('lib/asset/food3.jpg'),
                       fit: BoxFit.cover,
                       opacity: 0.1,
                     ),
@@ -134,18 +242,19 @@ class _DashboardState extends State<Dashboard> {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
+                          children: [
+                            const Text(
                               'Discover the secrets to\nbecoming a master chef!',
                               style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             ElevatedButton(
-                              onPressed: null, // add functionality later
-                              child: Text('Start Now'),
+                              onPressed: () {},
+                              child: const Text('Start Now'),
                             )
                           ],
                         ),
@@ -154,7 +263,7 @@ class _DashboardState extends State<Dashboard> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.asset(
-                          'lib/asset/food2.jpg', // 👈 your chef image
+                          'lib/asset/food2.jpg',
                           height: 80,
                           fit: BoxFit.cover,
                         ),
@@ -165,9 +274,32 @@ class _DashboardState extends State<Dashboard> {
               ],
             ),
           ),
-
-          // 🔽 GridView in Expanded
-          Expanded(child: RecipeGrid()),
+          Expanded(
+            child: filteredRecipes.isNotEmpty ||
+                    searchController.text.isNotEmpty
+                ? ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredRecipes.length,
+                    itemBuilder: (context, index) {
+                      final recipe = filteredRecipes[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading:
+                              const Icon(Icons.fastfood, color: Colors.orange),
+                          title: Text(recipe['name'] ?? 'No name'),
+                          subtitle: Text(
+                              'Tags: ${(recipe['tags'] ?? []).join(', ')}'),
+                        ),
+                      );
+                    },
+                  )
+                : const RecipeGrid(),
+          ),
         ],
       ),
     );
