@@ -9,7 +9,7 @@ Future<Map<String, dynamic>> result() async {
 
   try {
     Response response = await _axios.get('/recipe');
-    print(response.data);
+    // print(response.data);
     Map<String, dynamic> res = response.data;
 
     // print(res);
@@ -33,6 +33,50 @@ Dio axios([String? token]) {
   dio.options.extra = {
     'id': ''
   }; // You can change or remove this based on your logic
+
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) {
+        options.headers['accept'] = 'application/json';
+        if (token != null) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        handler.next(options);
+      },
+    ),
+  );
+
+  return dio;
+}
+
+// tags
+Future<Map<String, dynamic>> realFood() async {
+  final fetch = fetched();
+
+  try {
+    Response response = await fetch.get('/recipe/tag');
+    print(response.data);
+    // Map<String, dynamic> res = response.data;
+
+    // print(res);
+    return {'data': response.data};
+    // return {'data': response.data};
+  } on DioException catch (e) {
+    print('Dio error: ${e.message}');
+    return {'status': 'failed', 'message': e.message};
+  } catch (e) {
+    print('Unexpected error: $e');
+    return {'error': e.toString()};
+  }
+}
+
+Dio fetched([String? token]) {
+  final dio = Dio();
+  String baseURL = dotenv.env['BASEURL'] ?? '';
+  dio.options.baseUrl = baseURL;
+  dio.options.connectTimeout = const Duration(seconds: 5);
+  dio.options.sendTimeout = const Duration(seconds: 5);
+  dio.options.extra = {'id': ''};
 
   dio.interceptors.add(
     InterceptorsWrapper(
